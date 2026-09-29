@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rifa do Lucas - Rumo ao Canadá!</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --available: #e2e8f0;
+      --selected: #22c55e;
+      --occupied: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 20px 10px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 650px;
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    .banner-img {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-bottom: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 1.8rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .price-badge {
+      display: inline-block;
+      background-color: #dbeafe;
+      color: var(--primary);
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 1rem;
+      margin-top: 6px;
+    }
+
+    .story-card {
+      background-color: #f1f5f9;
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      line-height: 1.6;
+      font-size: 0.95rem;
+      color: #334155;
+    }
+
+    .story-card p {
+      margin-bottom: 12px;
+    }
+
+    .story-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: #fafafa;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    .dot.available { background-color: var(--available); border: 1px solid #cbd5e1; }
+    .dot.selected { background-color: var(--selected); }
+    .dot.occupied { background-color: var(--occupied); }
+
+    .numbers-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 480px) {
+      .numbers-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+
+    .number-btn {
+      aspect-ratio: 1;
+      border: none;
+      border-radius: 6px;
+      background-color: var(--available);
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .number-btn:hover:not(.occupied) {
+      transform: scale(1.08);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .number-btn.selected {
+      background-color: var(--selected);
+      color: white;
+    }
+
+    .number-btn.occupied {
+      background-color: var(--occupied);
+      color: white;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .checkout-form {
+      border-top: 2px dashed #e2e8f0;
+      padding-top: 20px;
+    }
+
+    .summary {
+      background-color: #eff6ff;
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      font-size: 0.95rem;
+      border: 1px solid #bfdbfe;
+    }
+
+    .summary p {
+      margin-bottom: 6px;
+    }
+
+    .summary p:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .pix-box {
+      display: none;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .pix-box h3 {
+      color: #166534;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .pix-key {
+      background: #ffffff;
+      padding: 10px;
+      border: 1px dashed #22c55e;
+      border-radius: 6px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #15803d;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-copy {
+      background: #22c55e;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-submit:hover {
+      background-color: var(--primary-hover);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Imagem Banner -->
+  <img src="BANNERBRABO.jpg" alt="Lucas Lima e Família" class="banner-img">
+
+  <div class="header">
+    <h1>Rifa Solidária: Rumo ao Canadá 🇨🇦</h1>
+    <div class="price-badge">R$ 15,00 por número | Prêmio: R$ 400,00 no PIX</div>
+  </div>
+
+  <!-- História do Lucas -->
+  <div class="story-card">
+    <p><strong>Olá, meu nome é Lucas Lima!</strong> Desde os 12 anos de idade, tenho o sonho de morar no Canadá, vivenciar a cultura e aproveitar as oportunidades de lá.</p>
+    <p>Recentemente, decidi ir atrás desse objetivo com tudo e estou no processo de transferência da minha faculdade para uma universidade canadense. Percebi que lá poderei ampliar meus conhecimentos e construir a carreira que sempre quis, aproveitando a estrutura de laboratórios e bolsas oferecidas. Além disso, esse será o primeiro passo para realizar outro grande sonho: viajar o mundo e conhecer diferentes culturas.</p>
+    <p>Devido a alguns imprevistos, acabei perdendo a reserva financeira que tinha guardado para custear as etapas desse processo de transferência. Por isso, criei esta rifa com o valor de <strong>R$ 15,00 por cota</strong> e um prêmio de <strong>R$ 400,00 no PIX</strong> para o ganhador.</p>
+    <p>Cada número comprado é um apoio gigante para que eu consiga dar esse passo no meu futuro acadêmico. Muito obrigado por fazer parte desse sonho!</p>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="dot available"></span> Livre</div>
+    <div class="legend-item"><span class="dot selected"></span> Selecionado</div>
+    <div class="legend-item"><span class="dot occupied"></span> Reservado/Pago</div>
+  </div>
+
+  <!-- Grade com 100 Números -->
+  <div class="numbers-grid" id="numbersGrid"></div>
+
+  <!-- Formulário de Finalização -->
+  <form class="checkout-form" id="checkoutForm" onsubmit="gerarPix(event)">
+    <div class="summary">
+      <p><strong>Números escolhidos:</strong> <span id="selectedCount">Nenhum</span></p>
+      <p><strong>Total a pagar:</strong> R$ <span id="totalAmount">0,00</span></p>
+    </div>
+
+    <div class="form-group">
+      <label for="nome">Nome Completo</label>
+      <input type="text" id="nome" required placeholder="Digite seu nome completo">
+    </div>
+
+    <div class="form-group">
+      <label for="whatsapp">WhatsApp</label>
+      <input type="tel" id="whatsapp" required placeholder="(27) 99999-9999">
+    </div>
+
+    <button type="submit" class="btn-submit">Reservar Números e Ver Chave PIX</button>
+  </form>
+
+  <!-- Caixa de Pagamento PIX -->
+  <div class="pix-box" id="pixBox">
+    <h3>Instruções de Pagamento</h3>
+    <p>Realize o PIX no valor total para a chave abaixo:</p>
+    <div class="pix-key">
+      <span id="pixKeyText">27992322328</span>
+      <button class="btn-copy" onclick="copiarPix()">Copiar Chave</button>
+    </div>
+    <p style="font-size: 0.85rem; color: #475569; margin-top: 8px;">
+      Após fazer o pagamento, envie o comprovante pelo WhatsApp com seu nome e os números escolhidos para confirmar sua reserva!
+    </p>
+  </div>
+</div>
+
+<script>
+  const PRICE_PER_NUMBER = 15.00;
+  const TOTAL_NUMBERS = 100;
+  const OCCUPIED_NUMBERS = []; // Exemplo de números já reservados/pagos
+
+  const selectedNumbers = new Set();
+  const grid = document.getElementById('numbersGrid');
+  const selectedCountEl = document.getElementById('selectedCount');
+  const totalAmountEl = document.getElementById('totalAmount');
+
+  // Gerar a grade de 100 números
+  for (let i = 1; i <= TOTAL_NUMBERS; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.classList.add('number-btn');
+    btn.innerText = i.toString().padStart(2, '0');
+
+    if (OCCUPIED_NUMBERS.includes(i)) {
+      btn.classList.add('occupied');
+    } else {
+      btn.addEventListener('click', () => toggleSelectNumber(i, btn));
+    }
+
+    grid.appendChild(btn);
+  }
+
+  function toggleSelectNumber(num, btnElement) {
+    if (selectedNumbers.has(num)) {
+      selectedNumbers.delete(num);
+      btnElement.classList.remove('selected');
+    } else {
+      selectedNumbers.add(num);
+      btnElement.classList.add('selected');
+    }
+    updateSummary();
+  }
+
+  function updateSummary() {
+    const count = selectedNumbers.size;
+    if (count === 0) {
+      selectedCountEl.innerText = 'Nenhum';
+      totalAmountEl.innerText = '0,00';
+    } else {
+      const sorted = Array.from(selectedNumbers).sort((a, b) => a - b);
+      selectedCountEl.innerText = sorted.map(n => n.toString().padStart(2, '0')).join(', ');
+      totalAmountEl.innerText = (count * PRICE_PER_NUMBER).toFixed(2).replace('.', ',');
+    }
+  }
+
+  function gerarPix(event) {
+    event.preventDefault();
+    if (selectedNumbers.size === 0) {
+      alert('Por favor, selecione pelo menos um número antes de continuar.');
+      return;
+    }
+
+    document.getElementById('pixBox').style.display = 'block';
+    window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
+
+  function copiarPix() {
+    const pixKey = document.getElementById('pixKeyText').innerText;
+    navigator.clipboard.writeText(pixKey);
+    alert('Chave PIX copiada com sucesso: ' + pixKey);
+  }
+</script>
+
+</body>
+</html>
