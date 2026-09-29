@@ -41,7 +41,8 @@
       overflow: hidden;
     }
 
-    .banner-img {
+    /* Troquei o nome da classe para evitar bloqueadores */
+    .foto-topo {
       width: 100%;
       height: auto;
       border-radius: 12px;
@@ -267,15 +268,14 @@
 <body>
 
 <div class="container">
-  <!-- Imagem Banner -->
-  <img src="BANNERBRABO.jpg" alt="Lucas Lima e Família" class="banner-img">
+  <!-- Imagem com nome e classe limpos -->
+  <img src="IMG_9255.JPG" alt="Lucas Lima e Família" class="foto-topo">
 
   <div class="header">
     <h1>Rifa Solidária: Rumo ao Canadá 🇨🇦</h1>
     <div class="price-badge">R$ 15,00 por número | Prêmio: R$ 400,00 no PIX</div>
   </div>
 
-  <!-- História do Lucas -->
   <div class="story-card">
     <p><strong>Olá, meu nome é Lucas Lima!</strong> Desde os 12 anos de idade, tenho o sonho de morar no Canadá, vivenciar a cultura e aproveitar as oportunidades de lá.</p>
     <p>Recentemente, decidi ir atrás desse objetivo com tudo e estou no processo de transferência da minha faculdade para uma universidade canadense. Percebi que lá poderei ampliar meus conhecimentos e construir a carreira que sempre quis, aproveitando a estrutura de laboratórios e bolsas oferecidas. Além disso, esse será o primeiro passo para realizar outro grande sonho: viajar o mundo e conhecer diferentes culturas.</p>
@@ -289,10 +289,8 @@
     <div class="legend-item"><span class="dot occupied"></span> Reservado/Pago</div>
   </div>
 
-  <!-- Grade com 100 Números -->
   <div class="numbers-grid" id="numbersGrid"></div>
 
-  <!-- Formulário de Finalização -->
   <form class="checkout-form" id="checkoutForm" onsubmit="gerarPix(event)">
     <div class="summary">
       <p><strong>Números escolhidos:</strong> <span id="selectedCount">Nenhum</span></p>
@@ -312,7 +310,6 @@
     <button type="submit" class="btn-submit">Reservar Números e Ver Chave PIX</button>
   </form>
 
-  <!-- Caixa de Pagamento PIX -->
   <div class="pix-box" id="pixBox">
     <h3>Instruções de Pagamento</h3>
     <p>Realize o PIX no valor total para a chave abaixo:</p>
@@ -329,14 +326,13 @@
 <script>
   const PRICE_PER_NUMBER = 15.00;
   const TOTAL_NUMBERS = 100;
-  const OCCUPIED_NUMBERS = []; // Exemplo de números já reservados/pagos
+  const OCCUPIED_NUMBERS = []; 
 
   const selectedNumbers = new Set();
   const grid = document.getElementById('numbersGrid');
   const selectedCountEl = document.getElementById('selectedCount');
   const totalAmountEl = document.getElementById('totalAmount');
 
-  // Gerar a grade de 100 números
   for (let i = 1; i <= TOTAL_NUMBERS; i++) {
     const btn = document.createElement('button');
     btn.type = 'button';
