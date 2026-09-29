@@ -13,7 +13,8 @@
       --text-main: #1e293b;
       --available: #e2e8f0;
       --selected: #22c55e;
-      --occupied: #ef4444;
+      --pending: #f59e0b; /* Laranja para Pendente */
+      --occupied: #ef4444; /* Vermelho para Pago */
     }
 
     * {
@@ -41,7 +42,6 @@
       overflow: hidden;
     }
 
-    /* Troquei o nome da classe para evitar bloqueadores */
     .foto-topo {
       width: 100%;
       height: auto;
@@ -93,7 +93,9 @@
 
     .legend {
       display: flex;
-      justify-content: space-around;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
       margin-bottom: 20px;
       font-size: 0.85rem;
       font-weight: 600;
@@ -116,6 +118,7 @@
     }
     .dot.available { background-color: var(--available); border: 1px solid #cbd5e1; }
     .dot.selected { background-color: var(--selected); }
+    .dot.pending { background-color: var(--pending); }
     .dot.occupied { background-color: var(--occupied); }
 
     .numbers-grid {
@@ -143,7 +146,8 @@
       transition: all 0.2s ease;
     }
 
-    .number-btn:hover:not(.occupied) {
+    /* O botão só ganha efeito se não for ocupado e não for pendente */
+    .number-btn:hover:not(.occupied):not(.pending) {
       transform: scale(1.08);
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
@@ -153,11 +157,18 @@
       color: white;
     }
 
+    .number-btn.pending {
+      background-color: var(--pending);
+      color: white;
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+
     .number-btn.occupied {
       background-color: var(--occupied);
       color: white;
       cursor: not-allowed;
-      opacity: 0.5;
+      opacity: 0.6;
     }
 
     .checkout-form {
@@ -268,7 +279,6 @@
 <body>
 
 <div class="container">
-  <!-- Imagem com nome e classe limpos -->
   <img src="IMG_9255.JPG" alt="Lucas Lima e Família" class="foto-topo">
 
   <div class="header">
@@ -285,8 +295,9 @@
 
   <div class="legend">
     <div class="legend-item"><span class="dot available"></span> Livre</div>
-    <div class="legend-item"><span class="dot selected"></span> Selecionado</div>
-    <div class="legend-item"><span class="dot occupied"></span> Reservado/Pago</div>
+    <div class="legend-item"><span class="dot selected"></span> Seu Número</div>
+    <div class="legend-item"><span class="dot pending"></span> Pendente</div>
+    <div class="legend-item"><span class="dot occupied"></span> Pago</div>
   </div>
 
   <div class="numbers-grid" id="numbersGrid"></div>
@@ -315,7 +326,7 @@
     <p>Realize o PIX no valor total para a chave abaixo:</p>
     <div class="pix-key">
       <span id="pixKeyText">27992322328</span>
-      <button class="btn-copy" onclick="copiarPix()">Copiar Chave</button>
+      <button class="btn-copy" type="button" onclick="copiarPix()">Copiar Chave</button>
     </div>
     <p style="font-size: 0.85rem; color: #475569; margin-top: 8px;">
       Após fazer o pagamento, envie o comprovante pelo WhatsApp com seu nome e os números escolhidos para confirmar sua reserva!
@@ -324,28 +335,71 @@
 </div>
 
 <script>
+  // ATENÇÃO: COLE O LINK DA SUA PLANILHA CSV AQUI:
+  const SPREADSHEET_URL = 'COLE_AQUI_O_SEU_LINK_CSV_DO_GOOGLE_SHEETS';
+
   const PRICE_PER_NUMBER = 15.00;
   const TOTAL_NUMBERS = 100;
-  const OCCUPIED_NUMBERS = []; 
+  
+  // Guardará o status de cada número lido da planilha
+  let statusDosNumeros = {}; 
 
   const selectedNumbers = new Set();
   const grid = document.getElementById('numbersGrid');
   const selectedCountEl = document.getElementById('selectedCount');
   const totalAmountEl = document.getElementById('totalAmount');
 
-  for (let i = 1; i <= TOTAL_NUMBERS; i++) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.classList.add('number-btn');
-    btn.innerText = i.toString().padStart(2, '0');
-
-    if (OCCUPIED_NUMBERS.includes(i)) {
-      btn.classList.add('occupied');
-    } else {
-      btn.addEventListener('click', () => toggleSelectNumber(i, btn));
+  async function carregarNumerosDaPlanilha() {
+    try {
+      const response = await fetch(SPREADSHEET_URL);
+      const data = await response.text();
+      
+      const linhas = data.split('\n');
+      
+      // Começa do i=1 para pular o cabeçalho (Números, Nomes, Telefone, Status)
+      for (let i = 1; i < linhas.length; i++) {
+        // Divide as colunas pela vírgula do CSV
+        const colunas = linhas[i].split(',');
+        
+        // Verifica se a linha tem as 4 colunas preenchidas
+        if (colunas.length >= 4) { 
+          const numero = parseInt(colunas[0].trim(), 10);
+          const status = colunas[3].trim().toLowerCase(); // Pega a palavra Pendente ou Pago
+          
+          if (!isNaN(numero)) {
+            statusDosNumeros[numero] = status; // Salva o status do número
+          }
+        }
+      }
+    } catch (erro) {
+      console.error("Erro ao ler a planilha. Verifique o link.", erro);
     }
+    
+    construirGrade();
+  }
 
-    grid.appendChild(btn);
+  function construirGrade() {
+    grid.innerHTML = '';
+    
+    for (let i = 1; i <= TOTAL_NUMBERS; i++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.classList.add('number-btn');
+      btn.innerText = i.toString().padStart(2, '0');
+
+      const status = statusDosNumeros[i];
+
+      if (status === 'pago') {
+        btn.classList.add('occupied');
+      } else if (status === 'pendente') {
+        btn.classList.add('pending');
+      } else {
+        // Se não for pago nem pendente, fica livre para clicar
+        btn.addEventListener('click', () => toggleSelectNumber(i, btn));
+      }
+
+      grid.appendChild(btn);
+    }
   }
 
   function toggleSelectNumber(num, btnElement) {
@@ -390,6 +444,9 @@
     navigator.clipboard.writeText(pixKey);
     alert('Chave PIX copiada com sucesso: ' + pixKey);
   }
+
+  // Inicializa buscando da planilha ao carregar a página
+  carregarNumerosDaPlanilha();
 </script>
 
 </body>
