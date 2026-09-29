@@ -321,6 +321,7 @@
     <button type="submit" class="btn-submit">Reservar Números e Ver Chave PIX</button>
   </form>
 
+ <!-- Caixa de Pagamento PIX (ATUALIZADA) -->
   <div class="pix-box" id="pixBox">
     <h3>Instruções de Pagamento</h3>
     <p>Realize o PIX no valor total para a chave abaixo:</p>
@@ -328,20 +329,25 @@
       <span id="pixKeyText">27992322328</span>
       <button class="btn-copy" type="button" onclick="copiarPix()">Copiar Chave</button>
     </div>
-    <p style="font-size: 0.85rem; color: #475569; margin-top: 8px;">
-      Após fazer o pagamento, envie o comprovante pelo WhatsApp com seu nome e os números escolhidos para confirmar sua reserva!
+    
+    <p style="font-size: 0.9rem; color: #1e293b; margin: 16px 0; font-weight: bold;">
+      ⚠️ Passo Final Obrigatório:
     </p>
+    
+    <!-- Botão do WhatsApp -->
+    <button type="button" class="btn-submit" style="background-color: #25D366; color: white;" onclick="enviarWhatsApp()">
+      📱 Enviar Comprovante no WhatsApp
+    </button>
   </div>
 </div>
 
 <script>
-  // ATENÇÃO: COLE O LINK DA SUA PLANILHA CSV AQUI:
-  const SPREADSHEET_URL = 'COLE_AQUI_O_SEU_LINK_CSV_DO_GOOGLE_SHEETS';
+  // ATENÇÃO: COLE O LINK DA SUA PLANILHA CSV AQUI (Não esqueça de colocar seu link novamente)
+  const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpqNwdyrNagj25MgfibQeNFtiYmqVTZYYfKI5aqtTYW1Wr6PR5lp02YuCQUnT6qlMefYwfndOHoUTG/pub?output=csv';
 
   const PRICE_PER_NUMBER = 15.00;
   const TOTAL_NUMBERS = 100;
   
-  // Guardará o status de cada número lido da planilha
   let statusDosNumeros = {}; 
 
   const selectedNumbers = new Set();
@@ -353,34 +359,26 @@
     try {
       const response = await fetch(SPREADSHEET_URL);
       const data = await response.text();
-      
       const linhas = data.split('\n');
       
-      // Começa do i=1 para pular o cabeçalho (Números, Nomes, Telefone, Status)
       for (let i = 1; i < linhas.length; i++) {
-        // Divide as colunas pela vírgula do CSV
         const colunas = linhas[i].split(',');
-        
-        // Verifica se a linha tem as 4 colunas preenchidas
         if (colunas.length >= 4) { 
           const numero = parseInt(colunas[0].trim(), 10);
-          const status = colunas[3].trim().toLowerCase(); // Pega a palavra Pendente ou Pago
-          
+          const status = colunas[3].trim().toLowerCase(); 
           if (!isNaN(numero)) {
-            statusDosNumeros[numero] = status; // Salva o status do número
+            statusDosNumeros[numero] = status; 
           }
         }
       }
     } catch (erro) {
-      console.error("Erro ao ler a planilha. Verifique o link.", erro);
+      console.error("Erro ao ler a planilha.", erro);
     }
-    
     construirGrade();
   }
 
   function construirGrade() {
     grid.innerHTML = '';
-    
     for (let i = 1; i <= TOTAL_NUMBERS; i++) {
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -394,10 +392,8 @@
       } else if (status === 'pendente') {
         btn.classList.add('pending');
       } else {
-        // Se não for pago nem pendente, fica livre para clicar
         btn.addEventListener('click', () => toggleSelectNumber(i, btn));
       }
-
       grid.appendChild(btn);
     }
   }
@@ -431,21 +427,38 @@
       alert('Por favor, selecione pelo menos um número antes de continuar.');
       return;
     }
-
+    // Mostra a caixa do PIX
     document.getElementById('pixBox').style.display = 'block';
-    window.scrollTo({
-      top: document.body.scrollHeight,
-      behavior: 'smooth'
-    });
+    
+    // Esconde o botão de gerar PIX para não clicar duas vezes
+    event.target.querySelector('.btn-submit').style.display = 'none';
+    
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   }
 
   function copiarPix() {
     const pixKey = document.getElementById('pixKeyText').innerText;
     navigator.clipboard.writeText(pixKey);
-    alert('Chave PIX copiada com sucesso: ' + pixKey);
+    alert('Chave PIX copiada com sucesso: ' + pixKey + '\n\nAgora faça o pagamento e clique no botão verde para enviar o comprovante!');
   }
 
-  // Inicializa buscando da planilha ao carregar a página
+  function enviarWhatsApp() {
+    const nome = document.getElementById('nome').value;
+    const whatsappUser = document.getElementById('whatsapp').value;
+    const numeros = Array.from(selectedNumbers).sort((a, b) => a - b).join(', ');
+    const total = (selectedNumbers.size * PRICE_PER_NUMBER).toFixed(2).replace('.', ',');
+
+    // Monta a mensagem automática
+    const mensagem = `Olá, Lucas! Meu nome é *${nome}* (${whatsappUser}).\n\nFiz a reserva dos seguintes números da rifa: *${numeros}*.\nO valor total deu *R$ ${total}*.\n\nSegue abaixo o meu comprovante do PIX:`;
+    
+    // O seu número de WhatsApp com o DDI do Brasil (55)
+    const seuNumero = "5527992322328"; 
+    
+    // Cria o link do WhatsApp e abre em nova aba
+    const url = `https://wa.me/${seuNumero}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+  }
+
   carregarNumerosDaPlanilha();
 </script>
 
